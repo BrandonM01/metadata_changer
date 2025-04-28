@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Image Processor{% endblock %}
+
+{% block content %}
+<h1>Image Processor</h1>
+
+<div class="form-container">
+    <form class="upload-form" id="imageForm" action="{{ url_for('process_images') }}" method="post" enctype="multipart/form-data">
+
+        <label class="form-label">Select Images:</label>
+        <input class="form-input" type="file" name="images" multiple required id="fileInput">
+
+        <label class="form-label">Batch Size (number of variants per image):</label>
+        <input class="form-input" type="number" name="batch_size" value="5" min="1" max="50" required>
+
+        <label class="form-label">Intensity (1–100):</label>
+        <input class="form-slider" type="range" name="intensity" min="1" max="100" value="30" oninput="this.nextElementSibling.value = this.value">
+        <output>30</output>
+
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="adjust_contrast"> Adjust Contrast</label><br>
+            <label><input type="checkbox" name="adjust_brightness"> Adjust Brightness</label><br>
+            <label><input type="checkbox" name="rotate"> Rotate Slightly</label><br>
+            <label><input type="checkbox" name="crop"> Crop Slightly</label><br>
+            <label><input type="checkbox" name="flip_horizontal"> Flip Horizontally</label>
+        </div>
+
+        <button class="main-button" id="submitBtn" type="submit">Process Images</button>
+
+        <div class="spinner" id="spinner" style="display:none; margin-top:20px;">
+            <img src="{{ url_for('static', filename='spinner.gif') }}" alt="Loading..." style="width:40px;height:40px;">
+        </div>
+
+        <div id="downloadSection" style="display:none; margin-top:30px;">
+            <a id="downloadLink" class="main-button" style="background-color: green; text-decoration: none;">Download Ready!</a>
+            <div style="height: 20px;"></div> <!-- spacer here -->
+            <div class="success-message" id="successMsg" style="color:green;">Success!</div>
+        </div>
+
+        <button class="main-button" id="newUploadBtn" type="button" onclick="resetUpload()" style="display:none; margin-top:20px;">Start New Upload</button>
+
+    </form>
+
+    <a href="{{ url_for('home') }}" class="back-link">Back Home</a>
+</div>
+
+<script>
+document.getElementById('imageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    document.getElementById('submitBtn').style.display = 'none';
+    document.getElementById('spinner').style.display = 'block';
+
+    fetch('{{ url_for("process_images") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('downloadSection').style.display = 'block';
+        document.getElementById('downloadLink').href = '/download-zip/' + data.zip_filename;
+        document.getElementById('successMsg').style.display = 'block';
+        document.getElementById('newUploadBtn').style.display = 'inline-block';
+
+        // Scroll to download section
+        document.getElementById('downloadSection').scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(error => {
+        alert('An error occurred!');
+        console.error(error);
+    });
+});
+
+function resetUpload() {
+    document.getElementById('fileInput').value = '';
+    document.getElementById('downloadSection').style.display = 'none';
+    document.getElementById('successMsg').style.display = 'none';
+    document.getElementById('submitBtn').style.display = 'inline-block';
+    document.getElementById('newUploadBtn').style.display = 'none';
+}
+</script>
+{% endblock %}

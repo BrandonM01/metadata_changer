@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Meta Data Changer{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Meta Data Changer</h1>
+    <div class="buttons">
+        <a href="{{ url_for('image_processor') }}"><button>Image Processor</button></a>
+        <a href="{{ url_for('video_processor') }}"><button>Video Processor</button></a>
+        <a href="{{ url_for('history') }}"><button>History</button></a>
+    </div>
+</div>
+{% endblock %}

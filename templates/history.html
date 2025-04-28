@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}History{% endblock %}
+
+{% block content %}
+<h1>History</h1>
+
+<div class="back-home-container">
+    <a href="{{ url_for('home') }}" class="back-link">Back Home</a>
+</div>
+
+<div class="bulk-actions">
+    <label><input type="checkbox" id="selectAllCheckbox"> Select All</label>
+    <button onclick="downloadSelected()">Download Selected</button>
+    <button onclick="deleteSelected()">Delete Selected</button>
+</div>
+
+<div class="history-grid">
+    {% for file in files %}
+    <div class="history-item">
+        <input type="checkbox" class="select-checkbox" value="{{ file }}">
+        {% if file.endswith(('.jpg', '.jpeg', '.png')) %}
+            <img src="{{ url_for('static', filename='history/' + file) }}" alt="Image" onclick="toggleCheckbox(this)">
+        {% elif file.endswith(('.mp4', '.mov')) %}
+            <video muted playsinline onclick="toggleCheckbox(this)">
+                <source src="{{ url_for('static', filename='history/' + file) }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        {% endif %}
+        <div class="actions">
+            <a href="{{ url_for('download_file', filename=file) }}">
+                <img src="{{ url_for('static', filename='downlaod.png') }}" alt="Download">
+            </a>
+            <button onclick="deleteSingle('{{ file }}')">
+                <img src="{{ url_for('static', filename='delete.png') }}" alt="Delete">
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ✨ Page Info + Pagination -->
+{% if total_pages > 1 %}
+    <div style="margin: 30px 0; font-weight: bold;">Page {{ page }} of {{ total_pages }}</div>
+    <div class="pagination">
+        {% if page > 1 %}
+            <a href="{{ url_for('history', page=page-1) }}">Previous</a>
+        {% endif %}
+
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+                <span class="current-page">{{ p }}</span>
+            {% else %}
+                <a href="{{ url_for('history', page=p) }}">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page < total_pages %}
+            <a href="{{ url_for('history', page=page+1) }}">Next</a>
+        {% endif %}
+    </div>
+{% endif %}
+
+<script>
+function toggleCheckbox(mediaElement) {
+    const container = mediaElement.closest('.history-item');
+    const checkbox = container.querySelector('.select-checkbox');
+    checkbox.checked = !checkbox.checked;
+    container.classList.toggle('selected', checkbox.checked);
+}
+
+document.getElementById('selectAllCheckbox').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.select-checkbox');
+    checkboxes.forEach(cb => {
+        cb.checked = this.checked;
+        const container = cb.closest('.history-item');
+        container.classList.toggle('selected', cb.checked);
+    });
+});
+
+function downloadSelected() {
+    const selected = Array.from(document.querySelectorAll('.select-checkbox:checked')).map(cb => cb.value);
+    if (selected.length === 0) return alert('Select at least one file.');
+    fetch('/download-multiple', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: selected })
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'selected_files.zip';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    });
+}
+
+function deleteSelected() {
+    const selected = Array.from(document.querySelectorAll('.select-checkbox:checked')).map(cb => cb.value);
+    if (selected.length === 0) return alert('Select at least one file.');
+    if (!confirm('Are you sure you want to delete the selected files?')) return;
+
+    fetch('/delete-multiple', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: selected })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Deleted!');
+            location.reload();
+        } else {
+            alert('Failed to delete.');
+        }
+    });
+}
+
+function deleteSingle(filename) {
+    if (!confirm('Are you sure you want to delete this file?')) return;
+    fetch('/delete-file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: filename })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Deleted!');
+            location.reload();
+        } else {
+            alert('Failed to delete.');
+        }
+    });
+}
+
+// ✨ Smooth scroll after page change
+document.addEventListener('DOMContentLoaded', function() {
+    const paginationLinks = document.querySelectorAll('.pagination a');
+    paginationLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            setTimeout(() => {
+                const grid = document.querySelector('.history-grid');
+                if (grid) {
+                    grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
+        });
+    });
+});
+</script>
+{% endblock %}
