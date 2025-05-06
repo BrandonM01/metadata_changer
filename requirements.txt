@@ -3,3 +3,5 @@ gunicorn
 Pillow
 ffmpeg-python
 Werkzeug
+python-dotenv
+stripe
