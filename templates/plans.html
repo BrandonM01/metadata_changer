@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Choose a Plan{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>Our Plans</h1>
+  <!-- Stripe Pricing Table -->
+  <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
+  <stripe-pricing-table
+    pricing-table-id="prctbl_1RLrRUKaOhwtKdra0ey2LYXx"
+    publishable-key="{{ stripe_publishable_key }}">
+  </stripe-pricing-table>
+</div>
+{% endblock %}

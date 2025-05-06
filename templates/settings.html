@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<h1>Settings</h1>
+
+<form method="POST" style="max-width: 400px; margin: auto;">
+    <div class="form-container">
+        <div style="margin-bottom: 20px;">
+            <div style="font-size: 50px; margin-bottom: 10px;">
+                🧑‍💻 🖥️
+            </div>
+            <p><strong>Email:</strong> {{ current_user.email }}</p>
+            <p><strong>Username:</strong> {{ current_user.username }}</p>
+        </div>
+
+        <hr style="margin: 20px 0;">
+
+        <div style="text-align: left; margin-bottom: 20px;">
+            <label for="username">Edit Username:</label><br>
+            <input type="text" name="username" value="{{ current_user.username }}" class="form-input">
+        </div>
+
+        <div style="text-align: left; margin-bottom: 20px;">
+            <label>
+                <input type="checkbox" name="backup_enabled" {% if current_user.backup_enabled %}checked{% endif %}>
+                Enable Google Drive Backup
+            </label>
+        </div>
+
+        <div style="text-align: left; margin-bottom: 20px;">
+            <label>Enable Dark Mode:</label><br>
+            <label class="switch">
+                <input type="checkbox" name="dark_mode_enabled" {% if current_user.dark_mode_enabled %}checked{% endif %}>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div style="text-align: left; margin-bottom: 20px;">
+            <label>View Plans:</label><br>
+            <a href="{{ url_for('plans') }}" class="main-button" style="display:inline-block; width:auto; padding:8px 16px;">
+                See Available Plans
+            </a>
+        </div>
+
+        <button type="submit" class="main-button">Save Settings</button>
+    </div>
+</form>
+
+<div class="back-home-container">
+    <a href="{{ url_for('home') }}" class="back-link">← Back Home</a>
+</div>
+{% endblock %}

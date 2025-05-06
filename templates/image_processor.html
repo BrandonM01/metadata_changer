@@ -12,7 +12,14 @@
         <input class="form-input" type="file" name="images" multiple required id="fileInput">
 
         <label class="form-label">Batch Size (number of variants per image):</label>
-        <input class="form-input" type="number" name="batch_size" value="5" min="1" max="50" required>
+        {% if current_user.plan == 'free' %}
+            <input class="form-input" type="number" name="batch_size" value="5" min="1" max="5" readonly>
+            <p style="font-size: 13px; color: grey;">Upgrade to increase batch size</p>
+        {% elif current_user.plan == 'pro' %}
+            <input class="form-input" type="number" name="batch_size" value="5" min="1" max="25" required>
+        {% else %}
+            <input class="form-input" type="number" name="batch_size" value="5" min="1" max="50" required>
+        {% endif %}
 
         <label class="form-label">Intensity (1–100):</label>
         <input class="form-slider" type="range" name="intensity" min="1" max="100" value="30" oninput="this.nextElementSibling.value = this.value">
@@ -34,8 +41,7 @@
 
         <div id="downloadSection" style="display:none; margin-top:30px;">
             <a id="downloadLink" class="main-button" style="background-color: green; text-decoration: none;">Download Ready!</a>
-            <div style="height: 20px;"></div> <!-- spacer here -->
-            <div class="success-message" id="successMsg" style="color:green;">Success!</div>
+            <div style="height: 20px;"></div>
         </div>
 
         <button class="main-button" id="newUploadBtn" type="button" onclick="resetUpload()" style="display:none; margin-top:20px;">Start New Upload</button>
@@ -61,10 +67,7 @@ document.getElementById('imageForm').addEventListener('submit', function(e) {
         document.getElementById('spinner').style.display = 'none';
         document.getElementById('downloadSection').style.display = 'block';
         document.getElementById('downloadLink').href = '/download-zip/' + data.zip_filename;
-        document.getElementById('successMsg').style.display = 'block';
         document.getElementById('newUploadBtn').style.display = 'inline-block';
-
-        // Scroll to download section
         document.getElementById('downloadSection').scrollIntoView({ behavior: 'smooth' });
     })
     .catch(error => {
@@ -76,7 +79,6 @@ document.getElementById('imageForm').addEventListener('submit', function(e) {
 function resetUpload() {
     document.getElementById('fileInput').value = '';
     document.getElementById('downloadSection').style.display = 'none';
-    document.getElementById('successMsg').style.display = 'none';
     document.getElementById('submitBtn').style.display = 'inline-block';
     document.getElementById('newUploadBtn').style.display = 'none';
 }

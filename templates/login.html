@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<h1>Login</h1>
+
+<div class="form-container{% if current_user.is_authenticated and current_user.dark_mode_enabled %} dark-mode{% endif %}">
+    <form method="POST" class="upload-form" id="loginForm">
+        <label class="form-label" for="email">Email</label>
+        <input class="form-input" type="email" name="email" required>
+
+        <label class="form-label" for="password">Password</label>
+        <input class="form-input" type="password" name="password" required>
+
+        <button type="submit" class="main-button" id="loginButton">Login</button>
+
+        <div id="spinner" style="display:none; margin-top:10px;">
+            <img src="{{ url_for('static', filename='spinner.gif') }}" alt="Loading..." width="40">
+        </div>
+    </form>
+
+    <p style="margin-top: 15px;">Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+</div>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', function() {
+    const btn = document.getElementById('loginButton');
+    btn.disabled = true;
+    btn.innerText = 'Logging in...';
+    document.getElementById('spinner').style.display = 'block';
+});
+</script>
+{% endblock %}

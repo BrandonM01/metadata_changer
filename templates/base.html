@@ -5,8 +5,86 @@
     <meta charset="UTF-8">
     <title>{% block title %}Meta Data Changer{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.min.css') }}">
+
+<style>
+body {
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+</style>
+
 </head>
-<body>
-    {% block content %}{% endblock %}
+<body class="{% if current_user.is_authenticated and current_user.dark_mode_enabled %}dark-mode{% endif %}">
+
+{% if current_user.is_authenticated %}
+<div style="position: absolute; top: 20px; right: 20px; font-size: 14px;">
+    Logged in as: {{ current_user.email }} |
+    <a href="{{ url_for('settings') }}" class="nav-link">Settings</a> |
+    <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+</div>
+{% endif %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div style="max-width: 600px; margin: 20px auto; padding: 0 15px;">
+      {% for category, message in messages %}
+        <div class="flash-message {{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+<!-- ✨ Auto fade flash messages -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const flashMessages = document.querySelectorAll('.flash-message');
+    flashMessages.forEach(msg => {
+        setTimeout(() => {
+            msg.style.transition = 'opacity 0.5s ease';
+            msg.style.opacity = '0';
+            setTimeout(() => msg.remove(), 500);
+        }, 4000);
+        msg.addEventListener('click', () => {
+            msg.style.transition = 'opacity 0.3s ease';
+            msg.style.opacity = '0';
+            setTimeout(() => msg.remove(), 300);
+        });
+    });
+
+    // Dark mode fix for flash messages and nav links if page dynamically switches
+    if (document.body.classList.contains('dark-mode')) {
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.style.color = '#66aaff';
+        });
+        document.querySelectorAll('.flash-message.success').forEach(el => {
+            el.style.backgroundColor = '#2e7d32';
+            el.style.color = '#fff';
+        });
+        document.querySelectorAll('.flash-message.error').forEach(el => {
+            el.style.backgroundColor = '#c62828';
+            el.style.color = '#fff';
+        });
+    }
+});
+</script>
+<!-- ✨ Not Enough Tokens Modal -->
+<div id="tokenModal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+     background: rgba(0, 0, 0, 0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 30px; border-radius: 8px; max-width: 400px; text-align: center;">
+        <h3>🚫 Not Enough Tokens</h3>
+        <p>You don’t have enough tokens to process this request.</p>
+        <button onclick="document.getElementById('tokenModal').style.display='none'" style="margin-top: 15px;" class="main-button">Okay</button>
+    </div>
+</div>
+
+<script>
+function showTokenModal() {
+    document.getElementById('tokenModal').style.display = 'flex';
+}
+</script>
+
 </body>
 </html>
