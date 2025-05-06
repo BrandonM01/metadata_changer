@@ -3,5 +3,9 @@ gunicorn
 Pillow
 ffmpeg-python
 Werkzeug
+
+# Env‑var loader
 python-dotenv
+
+# Stripe SDK
 stripe
